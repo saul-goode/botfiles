@@ -1,0 +1,36 @@
+{
+	"name": "botfil.es",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "NODE_OPTIONS='--experimental-require-module' vite build",
+		"preview": "vite preview",
+		"prepare": "NODE_OPTIONS='--experimental-require-module' svelte-kit sync || echo ''",
+		"check": "NODE_OPTIONS='--experimental-require-module' svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "NODE_OPTIONS='--experimental-require-module' svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vitest run --config vitest.config.ts",
+		"test:watch": "vitest --config vitest.config.ts"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-vercel": "^6.3.3",
+		"@sveltejs/kit": "^2.50.2",
+		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@tailwindcss/vite": "^4.2.2",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/svelte": "^5.3.1",
+		"esbuild": "^0.27.4",
+		"jsdom": "^29.0.1",
+		"svelte": "^5.51.0",
+		"svelte-check": "^4.4.2",
+		"tailwindcss": "^4.2.2",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.1",
+		"vitest": "^4.1.0"
+	},
+	"patchedDependencies": {
+		"estree-walker@3.0.3": "patches/estree-walker@3.0.3.patch"
+	}
+}
