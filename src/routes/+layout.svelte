@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import ThemePicker from '$lib/components/ThemePicker.svelte';
 
 	let { children } = $props();
 
@@ -44,28 +45,31 @@
 				botfil.es
 			</a>
 
-			<!-- Desktop nav -->
-			<div class="hidden md:flex items-center gap-1">
-				{#each navLinks as link}
-					<a
-						href={link.href}
-						class="px-3 py-1.5 rounded text-sm font-medium transition-colors"
-						style="color: var(--color-muted);"
-						onmouseenter={(e) => ((e.target as HTMLElement).style.color = 'var(--color-text)')}
-						onmouseleave={(e) => ((e.target as HTMLElement).style.color = 'var(--color-muted)')}
-					>
-						{link.label}
-					</a>
-				{/each}
-			</div>
+			<div class="flex items-center gap-1">
+				<!-- Desktop nav -->
+				<div class="hidden md:flex items-center gap-1 mr-1">
+					{#each navLinks as link}
+						<a
+							href={link.href}
+							class="px-3 py-1.5 rounded text-sm font-medium transition-colors"
+							style="color: var(--color-muted);"
+							onmouseenter={(e) => ((e.target as HTMLElement).style.color = 'var(--color-text)')}
+							onmouseleave={(e) => ((e.target as HTMLElement).style.color = 'var(--color-muted)')}
+						>
+							{link.label}
+						</a>
+					{/each}
+				</div>
 
-			<!-- Mobile toggle -->
-			<button
-				class="md:hidden p-1.5 rounded"
-				style="color: var(--color-muted);"
-				onclick={() => (mobileOpen = !mobileOpen)}
-				aria-label="Toggle menu"
-			>
+				<ThemePicker />
+
+				<!-- Mobile toggle -->
+				<button
+					class="md:hidden p-1.5 rounded"
+					style="color: var(--color-muted);"
+					onclick={() => (mobileOpen = !mobileOpen)}
+					aria-label="Toggle menu"
+				>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="20"
@@ -88,7 +92,8 @@
 						/>
 					{/if}
 				</svg>
-			</button>
+				</button>
+			</div>
 		</nav>
 
 		<!-- Mobile nav -->

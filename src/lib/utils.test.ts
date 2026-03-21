@@ -8,18 +8,28 @@ describe('generateConfig', () => {
 		expect(() => JSON.parse(json)).not.toThrow();
 	});
 
-	it('includes both auth providers by default', () => {
-		const config = JSON.parse(generateConfig(defaultFormState()));
+	it('includes both auth providers when OpenAI and Anthropic are selected', () => {
+		const state = defaultFormState();
+		state.auth.selectedFamilies = ['OpenAI', 'Anthropic'];
+		const config = JSON.parse(generateConfig(state));
 		expect(config.auth.profiles['openai-codex:default']).toBeDefined();
 		expect(config.auth.profiles['openrouter:default']).toBeDefined();
 	});
 
-	it('omits disabled auth providers', () => {
+	it('omits openrouter when only OpenAI is selected', () => {
 		const state = defaultFormState();
-		state.auth.useOpenRouter = false;
+		state.auth.selectedFamilies = ['OpenAI'];
 		const config = JSON.parse(generateConfig(state));
 		expect(config.auth.profiles['openrouter:default']).toBeUndefined();
 		expect(config.auth.profiles['openai-codex:default']).toBeDefined();
+	});
+
+	it('omits openai-codex when only non-OpenAI families are selected', () => {
+		const state = defaultFormState();
+		state.auth.selectedFamilies = ['Anthropic', 'Google'];
+		const config = JSON.parse(generateConfig(state));
+		expect(config.auth.profiles['openai-codex:default']).toBeUndefined();
+		expect(config.auth.profiles['openrouter:default']).toBeDefined();
 	});
 
 	it('sets primary model correctly', () => {

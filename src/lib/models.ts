@@ -1,7 +1,11 @@
 /**
  * Model transformation layer: converts llmgateway.io model entries
  * into OpenClaw-compatible model IDs and display metadata.
+ *
+ * The model list is a committed snapshot (src/lib/models.json).
+ * Refresh it with: bun run update-models
  */
+import modelsSnapshot from './models.json';
 
 export type OpenClawProvider = 'openai-codex' | 'openrouter';
 export type ModelFamily = 'OpenAI' | 'Anthropic' | 'Google' | 'xAI' | 'Perplexity' | 'Meta' | 'Groq' | 'Other';
@@ -141,31 +145,26 @@ export function transformModels(raw: LLMGatewayModel[]): ModelOption[] {
 	});
 }
 
-/** Simple in-memory cache */
-let cache: { models: ModelOption[]; fetchedAt: number } | null = null;
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-
-export async function fetchModels(): Promise<ModelOption[]> {
-	if (cache && Date.now() - cache.fetchedAt < CACHE_TTL_MS) {
-		return cache.models;
-	}
-
-	try {
-		const res = await fetch('https://api.llmgateway.io/v1/models');
-		if (!res.ok) throw new Error(`HTTP ${res.status}`);
-		const data = await res.json();
-
-		// llmgateway returns { data: [...] } or just an array
-		const raw: LLMGatewayModel[] = Array.isArray(data) ? data : (data.data ?? []);
-		const models = transformModels(raw);
-
-		cache = { models, fetchedAt: Date.now() };
-		return models;
-	} catch (err) {
-		console.warn('[models] Failed to fetch from llmgateway.io, using fallback:', err);
-		return FALLBACK_MODELS;
-	}
+/**
+ * Returns the committed model snapshot. Zero HTTP calls — refreshed by
+ * running `bun run update-models` (or the weekly GitHub Action).
+ */
+export function getModels(): ModelOption[] {
+	const data = modelsSnapshot as ModelOption[];
+	return data.length ? data : FALLBACK_MODELS;
 }
+
+/** Display metadata for each model family */
+export const PROVIDER_INFO: Record<ModelFamily, { icon: string; description: string; openclaw: OpenClawProvider }> = {
+	OpenAI: { icon: '🤖', description: 'GPT-5.x, Codex, and o-series models via OpenAI Codex', openclaw: 'openai-codex' },
+	Anthropic: { icon: '🧡', description: 'Claude Opus, Sonnet, and Haiku models', openclaw: 'openrouter' },
+	Google: { icon: '🔵', description: 'Gemini Pro and Flash models', openclaw: 'openrouter' },
+	xAI: { icon: '✖️', description: 'Grok frontier models', openclaw: 'openrouter' },
+	Perplexity: { icon: '🔍', description: 'Sonar search-augmented models', openclaw: 'openrouter' },
+	Meta: { icon: '🦙', description: 'Llama open-source models', openclaw: 'openrouter' },
+	Groq: { icon: '⚡', description: 'Ultra-fast inference on Groq hardware', openclaw: 'openrouter' },
+	Other: { icon: '🔧', description: 'Additional models via OpenRouter', openclaw: 'openrouter' }
+};
 
 /** Hardcoded fallback used when the API is unreachable */
 export const FALLBACK_MODELS: ModelOption[] = [

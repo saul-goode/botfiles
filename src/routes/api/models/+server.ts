@@ -1,11 +1,10 @@
 import { json } from '@sveltejs/kit';
-import { fetchModels } from '$lib/models';
+import { getModels } from '$lib/models';
 
-export async function GET() {
-	const models = await fetchModels();
-	return json(models, {
+export function GET() {
+	return json(getModels(), {
 		headers: {
-			'Cache-Control': 'public, max-age=3600'
+			'Cache-Control': 'public, max-age=86400'
 		}
 	});
 }

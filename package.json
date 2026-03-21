@@ -11,7 +11,8 @@
 		"check": "NODE_OPTIONS='--experimental-require-module' svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "NODE_OPTIONS='--experimental-require-module' svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest run --config vitest.config.ts",
-		"test:watch": "vitest --config vitest.config.ts"
+		"test:watch": "vitest --config vitest.config.ts",
+		"update-models": "bun run scripts/update-models.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.0",

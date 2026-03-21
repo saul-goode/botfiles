@@ -1,5 +1,6 @@
 // TypeScript types for the OpenClaw config schema
 // Model list is now dynamic — see $lib/models.ts
+import type { ModelFamily } from './models';
 
 export type UpdateChannel = 'stable' | 'beta' | 'nightly';
 export type LoggingRedact = 'none' | 'tools' | 'all';
@@ -125,10 +126,12 @@ export interface OpenClawConfig {
 
 export function generateConfig(state: ConfigFormState, modelAliases?: Record<string, string>): string {
 	const profiles: Record<string, AuthProfile> = {};
-	if (state.auth.useOpenAICodex) {
+	const needsCodex = state.auth.selectedFamilies.includes('OpenAI');
+	const needsOpenRouter = state.auth.selectedFamilies.some((f) => f !== 'OpenAI');
+	if (needsCodex) {
 		profiles['openai-codex:default'] = { provider: 'openai-codex', mode: 'oauth' };
 	}
-	if (state.auth.useOpenRouter) {
+	if (needsOpenRouter) {
 		profiles['openrouter:default'] = { provider: 'openrouter', mode: 'api_key' };
 	}
 
@@ -227,8 +230,7 @@ export interface ConfigFormState {
 		autoUpdate: boolean;
 	};
 	auth: {
-		useOpenAICodex: boolean;
-		useOpenRouter: boolean;
+		selectedFamilies: ModelFamily[];
 	};
 	logging: {
 		redactSensitive: LoggingRedact;
@@ -281,7 +283,7 @@ export interface ConfigFormState {
 export function defaultFormState(): ConfigFormState {
 	return {
 		update: { channel: 'stable', checkOnStart: true, autoUpdate: false },
-		auth: { useOpenAICodex: true, useOpenRouter: true },
+		auth: { selectedFamilies: ['OpenAI', 'Anthropic', 'Google'] as ModelFamily[] },
 		logging: { redactSensitive: 'tools' },
 		agent: {
 			primaryModel: 'openai-codex/gpt-5.3-codex',

@@ -78,6 +78,85 @@
 	background-clip: text;
 }
 
+/* ─── IDE Themes ────────────────────────────────────────────────────────── */
+
+html[data-theme="catppuccin"] {
+	--color-bg: #1e1e2e;
+	--color-surface: #181825;
+	--color-surface-elevated: #313244;
+	--color-border: #45475a;
+	--color-primary: #cba6f7;
+	--color-primary-dim: #a680d4;
+	--color-secondary: #89dceb;
+	--color-accent: #fab387;
+	--color-text: #cdd6f4;
+	--color-muted: #6c7086;
+	--color-success: #a6e3a1;
+	--color-danger: #f38ba8;
+}
+
+html[data-theme="tokyo-night"] {
+	--color-bg: #1a1b26;
+	--color-surface: #24283b;
+	--color-surface-elevated: #292e42;
+	--color-border: #3b4261;
+	--color-primary: #7aa2f7;
+	--color-primary-dim: #5a7fd4;
+	--color-secondary: #bb9af7;
+	--color-accent: #e0af68;
+	--color-text: #c0caf5;
+	--color-muted: #565f89;
+	--color-success: #9ece6a;
+	--color-danger: #f7768e;
+}
+
+html[data-theme="one-dark"] {
+	--color-bg: #21252b;
+	--color-surface: #282c34;
+	--color-surface-elevated: #2c313a;
+	--color-border: #3b4048;
+	--color-primary: #61afef;
+	--color-primary-dim: #4a8ec4;
+	--color-secondary: #c678dd;
+	--color-accent: #e5c07b;
+	--color-text: #abb2bf;
+	--color-muted: #5c6370;
+	--color-success: #98c379;
+	--color-danger: #e06c75;
+}
+
+html[data-theme="dracula"] {
+	--color-bg: #282a36;
+	--color-surface: #21222c;
+	--color-surface-elevated: #343746;
+	--color-border: #44475a;
+	--color-primary: #bd93f9;
+	--color-primary-dim: #9d74d9;
+	--color-secondary: #8be9fd;
+	--color-accent: #ffb86c;
+	--color-text: #f8f8f2;
+	--color-muted: #6272a4;
+	--color-success: #50fa7b;
+	--color-danger: #ff5555;
+}
+
+html[data-theme="ayu"] {
+	--color-bg: #0b0e14;
+	--color-surface: #0d1017;
+	--color-surface-elevated: #13161f;
+	--color-border: #1a1f2b;
+	--color-primary: #39bae6;
+	--color-primary-dim: #2d93bb;
+	--color-secondary: #d2a6ff;
+	--color-accent: #ffb454;
+	--color-text: #bfbdb6;
+	--color-muted: #4d5566;
+	--color-success: #7fd962;
+	--color-danger: #f26d78;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+
 @layer components {
 	.btn-primary {
 		display: inline-flex;
