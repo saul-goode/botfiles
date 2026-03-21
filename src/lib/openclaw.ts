@@ -1,4 +1,5 @@
 // TypeScript types for the OpenClaw config schema
+// Model list is now dynamic — see $lib/models.ts
 
 export type UpdateChannel = 'stable' | 'beta' | 'nightly';
 export type LoggingRedact = 'none' | 'tools' | 'all';
@@ -122,19 +123,7 @@ export interface OpenClawConfig {
 	};
 }
 
-export const KNOWN_MODELS: Array<{ id: string; label: string; provider: string; suggested_alias: string }> = [
-	{ id: 'openai-codex/gpt-5.3-codex', label: 'GPT-5.3 Codex', provider: 'openai-codex', suggested_alias: 'codex' },
-	{ id: 'openai-codex/gpt-5-mini', label: 'GPT-5 Mini', provider: 'openai-codex', suggested_alias: 'codex-mini' },
-	{ id: 'openai-codex/gpt-4o', label: 'GPT-4o', provider: 'openai-codex', suggested_alias: 'gpt4o' },
-	{ id: 'openrouter/anthropic/claude-opus-4-6', label: 'Claude Opus 4.6', provider: 'openrouter', suggested_alias: 'opus' },
-	{ id: 'openrouter/anthropic/claude-sonnet-4-5', label: 'Claude Sonnet 4.5', provider: 'openrouter', suggested_alias: 'sonnet' },
-	{ id: 'openrouter/google/gemini-flash-1.5', label: 'Gemini Flash 1.5', provider: 'openrouter', suggested_alias: 'flash' },
-	{ id: 'openrouter/openai/gpt-4o-mini', label: 'GPT-4o Mini', provider: 'openrouter', suggested_alias: 'mini' },
-	{ id: 'openrouter/meta-llama/llama-3.3-70b-instruct:free', label: 'Llama 3.3 70B (free)', provider: 'openrouter', suggested_alias: 'llama' },
-	{ id: 'openrouter/z-ai/glm-4.5-air:free', label: 'GLM-4.5 Air (free)', provider: 'openrouter', suggested_alias: 'glm' }
-];
-
-export function generateConfig(state: ConfigFormState): string {
+export function generateConfig(state: ConfigFormState, modelAliases?: Record<string, string>): string {
 	const profiles: Record<string, AuthProfile> = {};
 	if (state.auth.useOpenAICodex) {
 		profiles['openai-codex:default'] = { provider: 'openai-codex', mode: 'oauth' };
@@ -148,8 +137,8 @@ export function generateConfig(state: ConfigFormState): string {
 	const uniqueIds = [...new Set(allModelIds)];
 	const modelsMap: Record<string, ModelEntry> = {};
 	for (const id of uniqueIds) {
-		const known = KNOWN_MODELS.find((m) => m.id === id);
-		modelsMap[id] = { alias: known?.suggested_alias ?? id.split('/').pop() ?? id };
+		const alias = modelAliases?.[id] ?? id.split('/').pop()?.replace(/[.:]/g, '').slice(0, 12) ?? id;
+		modelsMap[id] = { alias };
 	}
 
 	const config: OpenClawConfig = {
