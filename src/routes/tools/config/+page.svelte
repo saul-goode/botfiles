@@ -2,8 +2,10 @@
 	import { generateConfig, defaultFormState, type ConfigFormState } from '$lib/openclaw';
 	import type { ModelOption, ModelFamily } from '$lib/models';
 
+	import { FALLBACK_MODELS } from '$lib/models';
+
 	let { data } = $props();
-	const allModels: ModelOption[] = data.models;
+	const allModels: ModelOption[] = data.models?.length ? data.models : FALLBACK_MODELS;
 
 	let state = $state<ConfigFormState>(defaultFormState());
 	let copied = $state(false);

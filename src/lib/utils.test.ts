@@ -103,10 +103,15 @@ describe('generateConfig', () => {
 	});
 });
 
+// Helper: wrap provider IDs into the actual API shape
+function p(...ids: string[]) {
+	return ids.map((providerId) => ({ providerId }));
+}
+
 describe('transformModels', () => {
 	it('maps anthropic models to openrouter/anthropic/', () => {
 		const models = transformModels([
-			{ id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', providers: ['anthropic'] }
+			{ id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', family: 'anthropic', providers: p('anthropic') }
 		]);
 		expect(models[0].id).toBe('openrouter/anthropic/claude-sonnet-4-6');
 		expect(models[0].provider).toBe('openrouter');
@@ -115,7 +120,7 @@ describe('transformModels', () => {
 
 	it('maps openai codex models to openai-codex/', () => {
 		const models = transformModels([
-			{ id: 'gpt-5.3-codex', name: 'GPT-5.3 Codex', providers: ['openai'] }
+			{ id: 'gpt-5.3-codex', name: 'GPT-5.3 Codex', family: 'openai', providers: p('openai') }
 		]);
 		const codexEntry = models.find((m) => m.id === 'openai-codex/gpt-5.3-codex');
 		expect(codexEntry).toBeDefined();
@@ -124,7 +129,7 @@ describe('transformModels', () => {
 
 	it('maps google models to openrouter/google/', () => {
 		const models = transformModels([
-			{ id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', providers: ['google-ai-studio'] }
+			{ id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', family: 'google', providers: p('google-ai-studio') }
 		]);
 		expect(models[0].id).toBe('openrouter/google/gemini-2.5-flash');
 		expect(models[0].family).toBe('Google');
@@ -132,15 +137,15 @@ describe('transformModels', () => {
 
 	it('maps xai models to openrouter/x-ai/', () => {
 		const models = transformModels([
-			{ id: 'grok-4', name: 'Grok 4', providers: ['xai'] }
+			{ id: 'grok-4', name: 'Grok 4', family: 'xai', providers: p('xai') }
 		]);
 		expect(models[0].id).toBe('openrouter/x-ai/grok-4');
 	});
 
-	it('skips llmgateway meta-models', () => {
+	it('skips llmgateway meta-models by id', () => {
 		const models = transformModels([
-			{ id: 'custom', providers: ['llmgateway'] },
-			{ id: 'auto', providers: ['llmgateway'] }
+			{ id: 'custom', family: 'llmgateway', providers: p('llmgateway') },
+			{ id: 'auto', family: 'llmgateway', providers: p('llmgateway') }
 		]);
 		expect(models).toHaveLength(0);
 	});
@@ -150,7 +155,8 @@ describe('transformModels', () => {
 			{
 				id: 'claude-sonnet-4-6',
 				name: 'Claude Sonnet 4.6',
-				providers: ['anthropic', 'google-vertex']
+				family: 'anthropic',
+				providers: p('anthropic', 'google-vertex')
 			}
 		]);
 		const ids = models.map((m) => m.id);
@@ -158,9 +164,9 @@ describe('transformModels', () => {
 		expect(ids.length).toBe(unique.size);
 	});
 
-	it('marks free models correctly', () => {
+	it('uses top-level free flag from API', () => {
 		const models = transformModels([
-			{ id: 'some-model:free', name: 'Some Free Model', providers: ['anthropic'] }
+			{ id: 'some-model', name: 'Some Free Model', family: 'anthropic', providers: p('anthropic'), free: true }
 		]);
 		expect(models[0].free).toBe(true);
 	});

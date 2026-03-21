@@ -21,10 +21,20 @@ export interface ModelOption {
 	free: boolean;
 }
 
+// Actual shape returned by api.llmgateway.io/v1/models
+interface LLMGatewayProvider {
+	providerId: string;
+}
+
 interface LLMGatewayModel {
 	id: string;
 	name?: string;
-	providers?: string[];
+	/** Top-level family slug e.g. "openai", "anthropic", "google" */
+	family?: string;
+	/** Array of provider objects — extract .providerId for routing */
+	providers?: LLMGatewayProvider[];
+	/** Top-level free flag */
+	free?: boolean;
 }
 
 /** Maps llmgateway provider slugs to OpenRouter provider slugs */
@@ -41,19 +51,17 @@ const OPENROUTER_PROVIDER_MAP: Record<string, string> = {
 };
 
 const FAMILY_MAP: Record<string, ModelFamily> = {
-	anthropic: 'Anthropic',
-	'google-ai-studio': 'Google',
-	'google-vertex': 'Google',
 	openai: 'OpenAI',
-	azure: 'OpenAI',
+	anthropic: 'Anthropic',
+	google: 'Google',
 	xai: 'xAI',
 	perplexity: 'Perplexity',
-	groq: 'Groq',
-	'meta-llama': 'Meta'
+	meta: 'Meta',
+	groq: 'Groq'
 };
 
-/** Providers we don't want to surface (infra-level, not user-facing) */
-const SKIP_PROVIDERS = new Set(['llmgateway', 'aws-bedrock', 'azure', 'nanogpt', 'bytedance', 'obsidian']);
+/** Provider IDs we don't want to surface */
+const SKIP_PROVIDER_IDS = new Set(['llmgateway', 'aws-bedrock', 'azure', 'nanogpt', 'bytedance', 'obsidian']);
 
 /** Generate a short alias from a model ID */
 function suggestAlias(modelId: string): string {
@@ -68,91 +76,58 @@ function suggestAlias(modelId: string): string {
 		.slice(0, 12);
 }
 
-function detectFamily(providers: string[]): ModelFamily {
-	for (const p of providers) {
-		if (FAMILY_MAP[p]) return FAMILY_MAP[p];
-	}
-	return 'Other';
-}
-
 export function transformModels(raw: LLMGatewayModel[]): ModelOption[] {
 	const seen = new Set<string>();
 	const results: ModelOption[] = [];
 
 	for (const model of raw) {
-		const providers = model.providers ?? [];
-
-		// Skip llmgateway meta-models and infra-only providers
-		if (providers.every((p) => SKIP_PROVIDERS.has(p))) continue;
 		if (model.id === 'custom' || model.id === 'auto') continue;
 
-		const family = detectFamily(providers);
-		const isFree = model.id.includes(':free');
+		// Extract provider ID strings from the objects array
+		const providerIds = (model.providers ?? []).map((p) => p.providerId);
+
+		// Skip models that only have infra-level providers
+		if (providerIds.length > 0 && providerIds.every((p) => SKIP_PROVIDER_IDS.has(p))) continue;
+
+		// Use the top-level family field for grouping (more reliable than inferring from providers)
+		const familySlug = model.family ?? '';
+		const family: ModelFamily = FAMILY_MAP[familySlug] ?? 'Other';
+		const isFree = model.free ?? model.id.includes(':free');
 		const label = model.name ?? model.id;
 
-		// OpenAI models — codex variants go through openai-codex, rest through openrouter
-		if (providers.includes('openai') || providers.includes('azure')) {
+		// OpenAI models: codex variants → openai-codex, others → both openai-codex and openrouter/openai
+		if (familySlug === 'openai') {
 			if (model.id.includes('codex')) {
 				const id = `openai-codex/${model.id}`;
 				if (!seen.has(id)) {
 					seen.add(id);
-					results.push({
-						id,
-						label,
-						family,
-						provider: 'openai-codex',
-						alias: suggestAlias(id),
-						free: false
-					});
+					results.push({ id, label, family, provider: 'openai-codex', alias: suggestAlias(id), free: false });
 				}
 			} else {
-				// Regular OpenAI models — accessible via openrouter AND openai-codex
-				// We add both so the user can pick based on which provider they have
 				const idCodex = `openai-codex/${model.id}`;
 				if (!seen.has(idCodex)) {
 					seen.add(idCodex);
-					results.push({
-						id: idCodex,
-						label,
-						family,
-						provider: 'openai-codex',
-						alias: suggestAlias(idCodex),
-						free: false
-					});
+					results.push({ id: idCodex, label, family, provider: 'openai-codex', alias: suggestAlias(idCodex), free: false });
 				}
 				const idRouter = `openrouter/openai/${model.id}`;
 				if (!seen.has(idRouter)) {
 					seen.add(idRouter);
-					results.push({
-						id: idRouter,
-						label: `${label} (via OpenRouter)`,
-						family,
-						provider: 'openrouter',
-						alias: suggestAlias(idRouter),
-						free: false
-					});
+					results.push({ id: idRouter, label: `${label} (via OpenRouter)`, family, provider: 'openrouter', alias: suggestAlias(idRouter), free: false });
 				}
 			}
 			continue;
 		}
 
-		// All other providers go through openrouter
-		const primaryProvider = providers.find((p) => OPENROUTER_PROVIDER_MAP[p]);
-		if (!primaryProvider) continue;
+		// All other providers: find first mappable provider ID for the openrouter slug
+		const primaryProviderId = providerIds.find((p) => OPENROUTER_PROVIDER_MAP[p]);
+		if (!primaryProviderId) continue;
 
-		const routerSlug = OPENROUTER_PROVIDER_MAP[primaryProvider];
+		const routerSlug = OPENROUTER_PROVIDER_MAP[primaryProviderId];
 		const id = `openrouter/${routerSlug}/${model.id}`;
 
 		if (!seen.has(id)) {
 			seen.add(id);
-			results.push({
-				id,
-				label,
-				family,
-				provider: 'openrouter',
-				alias: suggestAlias(id),
-				free: isFree
-			});
+			results.push({ id, label, family, provider: 'openrouter', alias: suggestAlias(id), free: isFree });
 		}
 	}
 
