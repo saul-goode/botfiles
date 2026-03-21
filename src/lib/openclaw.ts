@@ -283,7 +283,7 @@ export interface ConfigFormState {
 export function defaultFormState(): ConfigFormState {
 	return {
 		update: { channel: 'stable', checkOnStart: true, autoUpdate: false },
-		auth: { selectedFamilies: ['OpenAI', 'Anthropic', 'Google'] as ModelFamily[] },
+		auth: { selectedFamilies: [] as ModelFamily[] },
 		logging: { redactSensitive: 'tools' },
 		agent: {
 			primaryModel: 'openai-codex/gpt-5.3-codex',

@@ -12,9 +12,9 @@ import {
 } from "$lib/openclaw";
 
 const { data } = $props();
-const allModels = $derived<ModelOption[]>(
-	data.models?.length ? data.models : FALLBACK_MODELS,
-);
+const allModels: ModelOption[] = data.models?.length
+	? data.models
+	: FALLBACK_MODELS;
 
 const form = $state(defaultFormState());
 let copied = $state(false);
@@ -115,7 +115,7 @@ function toggleFamily(family: ModelFamily) {
   />
 </svelte:head>
 
-<div class="max-w-6xl mx-auto px-4 py-12">
+<div class="max-w-6xl mx-auto px-4 py-12 pb-24 lg:pb-12">
   <!-- Header -->
   <div class="mb-8">
     <a
@@ -135,16 +135,16 @@ function toggleFamily(family: ModelFamily) {
 
   <div class="grid lg:grid-cols-[1fr_420px] gap-6 items-start">
     <!-- Left: form -->
-    <div>
+    <div class="min-w-0">
       <!-- Section tabs -->
       <div
-        class="flex flex-wrap gap-1 p-1 rounded-lg mb-6"
+        class="grid grid-cols-2 md:grid-cols-6 gap-1 p-1 rounded-lg mb-6"
         style="background-color: var(--color-surface);"
       >
         {#each sections as sec}
           <button
             onclick={() => (activeSection = sec.id)}
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all"
+            class="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium transition-all"
             style={activeSection === sec.id
               ? "background-color: var(--color-surface-elevated); color: var(--color-primary); border: 1px solid var(--color-border);"
               : "color: var(--color-muted); border: 1px solid transparent;"}
@@ -910,8 +910,8 @@ function toggleFamily(family: ModelFamily) {
       {/if}
     </div>
 
-    <!-- Right: JSON output -->
-    <div class="lg:sticky lg:top-20 self-start">
+    <!-- Right: JSON output (desktop only) -->
+    <div class="hidden lg:block min-w-0 lg:sticky lg:top-20 self-start">
       <div
         class="card"
         style="border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border));"
@@ -939,9 +939,22 @@ function toggleFamily(family: ModelFamily) {
           </div>
         </div>
         <pre
-          class="font-mono text-xs leading-relaxed rounded-lg p-3 overflow-x-auto"
+          class="w-full font-mono text-xs leading-relaxed rounded-lg p-3 overflow-x-auto"
           style="background-color: var(--color-bg); color: var(--color-text); max-height: 75vh; overflow-y: auto;">{config}</pre>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Mobile: sticky bottom action bar -->
+<div
+  class="lg:hidden fixed bottom-0 left-0 right-0 z-40 px-4 py-3 flex gap-3"
+  style="background-color: color-mix(in srgb, var(--color-bg) 90%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--color-border);"
+>
+  <button class="btn-ghost flex-1 text-sm py-2" onclick={copyToClipboard}>
+    {copied ? "✓ Copied" : "Copy JSON"}
+  </button>
+  <button class="btn-primary flex-1 text-sm py-2" onclick={downloadConfig}>
+    Download
+  </button>
 </div>

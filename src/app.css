@@ -21,6 +21,11 @@
 }
 
 @layer base {
+	html,
+	body {
+		overflow-x: hidden;
+	}
+
 	html {
 		background-color: var(--color-bg);
 		color: var(--color-text);
