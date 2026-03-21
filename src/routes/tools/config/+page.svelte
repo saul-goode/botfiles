@@ -28,7 +28,7 @@
 	);
 
 	// Grouped for display
-	const modelsByFamily = $derived(() => {
+	const modelsByFamily = $derived.by(() => {
 		const groups = new Map<ModelFamily, ModelOption[]>();
 		for (const m of availableModels) {
 			if (!groups.has(m.family)) groups.set(m.family, []);
@@ -80,10 +80,6 @@
 		}
 	}
 
-	// When primary model changes, make sure it's not also in fallbacks
-	$effect(() => {
-		state.agent.fallbacks = state.agent.fallbacks.filter((f) => f !== state.agent.primaryModel);
-	});
 </script>
 
 <svelte:head>
@@ -203,7 +199,7 @@
 						<div>
 							<label class="label" for="primary-model">Primary model</label>
 							<select id="primary-model" class="input-field" bind:value={state.agent.primaryModel}>
-								{#each [...modelsByFamily().entries()] as [family, models]}
+								{#each [...modelsByFamily.entries()] as [family, models]}
 									<optgroup label={family}>
 										{#each models as m}
 											<option value={m.id}>{m.label}{m.free ? ' ★ free' : ''}</option>
@@ -226,7 +222,7 @@
 									: 'None selected.'}
 							</p>
 
-							{#each [...modelsByFamily().entries()] as [family, models]}
+							{#each [...modelsByFamily.entries()] as [family, models]}
 								{@const eligibleModels = models.filter((m) => m.id !== state.agent.primaryModel)}
 								{#if eligibleModels.length > 0}
 									<div class="mb-4">
@@ -274,7 +270,7 @@
 						<div>
 							<label class="label" for="heartbeat-model">Heartbeat model</label>
 							<select id="heartbeat-model" class="input-field" bind:value={state.agent.heartbeatModel}>
-								{#each [...modelsByFamily().entries()] as [family, models]}
+								{#each [...modelsByFamily.entries()] as [family, models]}
 									<optgroup label={family}>
 										{#each models as m}
 											<option value={m.id}>{m.label}{m.free ? ' ★ free' : ''}</option>
