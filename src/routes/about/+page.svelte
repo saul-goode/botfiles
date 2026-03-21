@@ -1,17 +1,17 @@
 <svelte:head>
-	<title>About — botfil.es</title>
-	<meta name="description" content="About botfil.es and the OpenClaw autonomous agent framework." />
+	<title>About — botfiles</title>
+	<meta name="description" content="About botfiles and the OpenClaw autonomous agent framework." />
 </svelte:head>
 
 <div class="max-w-3xl mx-auto px-4 py-16">
 	<div class="section-title">About</div>
-	<h1 class="text-3xl font-bold mb-8">botfil.es &amp; OpenClaw</h1>
+	<h1 class="text-3xl font-bold mb-8">botfiles &amp; OpenClaw</h1>
 
 	<div class="space-y-8" style="color: var(--color-muted); line-height: 1.8;">
 		<section>
-			<h2 class="text-lg font-semibold mb-3" style="color: var(--color-text);">What is botfil.es?</h2>
+			<h2 class="text-lg font-semibold mb-3" style="color: var(--color-text);">What is botfiles?</h2>
 			<p>
-				botfil.es is a collection of tools designed to make setting up and configuring autonomous
+				botfiles is a collection of tools designed to make setting up and configuring autonomous
 				agents easier. The first target is OpenClaw, but the goal is to eventually cover the broader
 				landscape of agent frameworks.
 			</p>
@@ -33,7 +33,7 @@
 		<section>
 			<h2 class="text-lg font-semibold mb-3" style="color: var(--color-text);">Why these tools?</h2>
 			<p>
-				OpenClaw's config format is powerful but has a learning curve. botfil.es started as a way
+				OpenClaw's config format is powerful but has a learning curve. botfiles started as a way
 				to generate valid configs without reading through the full documentation every time — and
 				grew from there.
 			</p>

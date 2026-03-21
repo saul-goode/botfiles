@@ -1,6 +1,6 @@
 <svelte:head>
-	<title>Docs — botfil.es</title>
-	<meta name="description" content="Documentation for OpenClaw and the botfil.es toolkit." />
+	<title>Docs — botfiles</title>
+	<meta name="description" content="Documentation for OpenClaw and the botfiles toolkit." />
 </svelte:head>
 
 <div class="max-w-6xl mx-auto px-4 py-16">

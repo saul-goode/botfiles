@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-	<title>botfil.es — Tools for autonomous agents</title>
+	<title>botfiles — Tools for autonomous agents</title>
 	<meta
 		name="description"
 		content="Toolkit for setting up and configuring autonomous agents like OpenClaw. Config generators, setup wizards, and more."
@@ -50,7 +50,7 @@
 			with your bot config.
 		</h1>
 		<p class="text-lg mb-8" style="color: var(--color-muted); max-width: 560px; line-height: 1.7;">
-			botfil.es gives you a set of practical tools for configuring, validating, and launching
+			botfiles gives you a set of practical tools for configuring, validating, and launching
 			autonomous agents — starting with OpenClaw.
 		</p>
 
@@ -145,7 +145,7 @@
 				can focus on defining what your agent actually does.
 			</p>
 			<p class="leading-relaxed" style="color: var(--color-muted);">
-				botfil.es exists to make the setup and configuration side of OpenClaw as painless as
+				botfiles exists to make the setup and configuration side of OpenClaw as painless as
 				possible, especially for users who are new to agent infrastructure.
 			</p>
 		</div>

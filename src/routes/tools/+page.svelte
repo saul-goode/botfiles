@@ -31,7 +31,7 @@
 </script>
 
 <svelte:head>
-	<title>Tools — botfil.es</title>
+	<title>Tools — botfiles</title>
 	<meta name="description" content="Tools for configuring and launching OpenClaw autonomous agents." />
 </svelte:head>
 

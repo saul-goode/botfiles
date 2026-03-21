@@ -11,9 +11,14 @@ export type GatewayMode = 'local' | 'remote';
 export type GatewayBind = 'loopback' | 'all';
 export type GatewayAuthMode = 'token' | 'none';
 export type TailscaleMode = 'off' | 'funnel' | 'serve';
-export type TelegramDmPolicy = 'pairing' | 'open' | 'closed';
-export type TelegramGroupPolicy = 'allowlist' | 'denylist' | 'open' | 'closed';
-export type TelegramStreaming = 'off' | 'on';
+export type TelegramDmPolicy = 'pairing' | 'allowlist' | 'open' | 'disabled';
+export type TelegramGroupPolicy = 'allowlist' | 'open' | 'disabled';
+export type TelegramStreaming = 'off' | 'partial' | 'block' | 'progress';
+export type TelegramReactionLevel = 'off' | 'ack' | 'minimal' | 'extensive';
+export type DiscordDmPolicy = 'pairing' | 'allowlist' | 'open' | 'disabled';
+export type DiscordGroupPolicy = 'allowlist' | 'open' | 'disabled';
+export type DiscordStreaming = 'off' | 'partial' | 'block' | 'progress';
+export type DiscordStatus = 'online' | 'idle' | 'dnd' | 'invisible';
 export type MemorySearchSource = 'memory' | 'sessions' | 'files';
 export type AgentListMode = 'replace' | 'merge';
 
@@ -97,10 +102,23 @@ export interface OpenClawConfig {
 	channels: {
 		telegram?: {
 			enabled: boolean;
-			dmPolicy: TelegramDmPolicy;
 			botToken: string;
+			dmPolicy: TelegramDmPolicy;
+			allowFrom?: number[];
 			groupPolicy: TelegramGroupPolicy;
 			streaming: TelegramStreaming;
+			reactionLevel?: TelegramReactionLevel;
+			textChunkLimit?: number;
+		};
+		discord?: {
+			enabled: boolean;
+			token: string;
+			dmPolicy: DiscordDmPolicy;
+			groupPolicy: DiscordGroupPolicy;
+			allowFrom?: string[];
+			streaming: DiscordStreaming;
+			status?: DiscordStatus;
+			voice?: { enabled: boolean };
 		};
 	};
 	gateway: {
@@ -210,13 +228,33 @@ export function generateConfig(state: ConfigFormState, modelAliases?: Record<str
 	};
 
 	if (state.telegram.enabled) {
-		config.channels.telegram = {
+		const tg: NonNullable<typeof config.channels.telegram> = {
 			enabled: true,
-			dmPolicy: state.telegram.dmPolicy,
 			botToken: state.telegram.botToken || '<YOUR_BOT_TOKEN>',
+			dmPolicy: state.telegram.dmPolicy,
 			groupPolicy: state.telegram.groupPolicy,
-			streaming: state.telegram.streaming
+			streaming: state.telegram.streaming,
+			reactionLevel: state.telegram.reactionLevel,
+			textChunkLimit: state.telegram.textChunkLimit
 		};
+		const tgAllowFrom = state.telegram.allowFrom.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+		if (tgAllowFrom.length) tg.allowFrom = tgAllowFrom;
+		config.channels.telegram = tg;
+	}
+
+	if (state.discord.enabled) {
+		const dc: NonNullable<typeof config.channels.discord> = {
+			enabled: true,
+			token: state.discord.token || '<YOUR_BOT_TOKEN>',
+			dmPolicy: state.discord.dmPolicy,
+			groupPolicy: state.discord.groupPolicy,
+			streaming: state.discord.streaming
+		};
+		if (state.discord.status) dc.status = state.discord.status as DiscordStatus;
+		if (state.discord.voiceEnabled) dc.voice = { enabled: true };
+		const dcAllowFrom = state.discord.allowFrom.split(',').map(s => s.trim()).filter(Boolean);
+		if (dcAllowFrom.length) dc.allowFrom = dcAllowFrom;
+		config.channels.discord = dc;
 	}
 
 	return JSON.stringify(config, null, 2);
@@ -263,8 +301,21 @@ export interface ConfigFormState {
 		enabled: boolean;
 		botToken: string;
 		dmPolicy: TelegramDmPolicy;
+		allowFrom: string; // comma-separated user IDs
 		groupPolicy: TelegramGroupPolicy;
 		streaming: TelegramStreaming;
+		reactionLevel: TelegramReactionLevel;
+		textChunkLimit: number;
+	};
+	discord: {
+		enabled: boolean;
+		token: string;
+		dmPolicy: DiscordDmPolicy;
+		groupPolicy: DiscordGroupPolicy;
+		allowFrom: string; // comma-separated user/role IDs
+		streaming: DiscordStreaming;
+		status: DiscordStatus | '';
+		voiceEnabled: boolean;
 	};
 	gateway: {
 		port: number;
@@ -310,8 +361,21 @@ export function defaultFormState(): ConfigFormState {
 			enabled: false,
 			botToken: '',
 			dmPolicy: 'pairing',
+			allowFrom: '',
 			groupPolicy: 'allowlist',
-			streaming: 'off'
+			streaming: 'off',
+			reactionLevel: 'minimal',
+			textChunkLimit: 4000
+		},
+		discord: {
+			enabled: false,
+			token: '',
+			dmPolicy: 'pairing',
+			groupPolicy: 'allowlist',
+			allowFrom: '',
+			streaming: 'off',
+			status: '',
+			voiceEnabled: false
 		},
 		gateway: {
 			port: 18789,

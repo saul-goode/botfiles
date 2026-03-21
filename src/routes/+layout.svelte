@@ -42,7 +42,7 @@
 				>
 					b
 				</span>
-				botfil.es
+				botfiles
 			</a>
 
 			<div class="flex items-center gap-1">
@@ -128,7 +128,7 @@
 	>
 		<div class="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
 			<div class="flex items-center gap-2 font-mono text-sm" style="color: var(--color-muted);">
-				<span style="color: var(--color-primary);">botfil.es</span>
+				<span style="color: var(--color-primary);">botfiles</span>
 				&mdash; tools for autonomous agents
 			</div>
 			<p class="text-xs" style="color: var(--color-muted);">

@@ -108,7 +108,7 @@ function toggleFamily(family: ModelFamily) {
 </script>
 
 <svelte:head>
-  <title>Config Generator — botfil.es</title>
+  <title>Config Generator — botfiles</title>
   <meta
     name="description"
     content="Generate your openclaw.json configuration file."
@@ -606,6 +606,7 @@ function toggleFamily(family: ModelFamily) {
             Channels let your agent receive messages from external platforms.
           </p>
 
+          <!-- Telegram -->
           <div
             class="rounded-lg overflow-hidden"
             style="border: 1px solid {form.telegram.enabled
@@ -623,14 +624,12 @@ function toggleFamily(family: ModelFamily) {
                 <div>
                   <div class="font-semibold text-sm">Telegram</div>
                   <div class="text-xs" style="color: var(--color-muted);">
-                    Bot integration
+                    Fastest setup — simple bot token
                   </div>
                 </div>
               </div>
               <label class="flex items-center gap-2 cursor-pointer">
-                <span class="text-xs" style="color: var(--color-muted);"
-                  >Enable</span
-                >
+                <span class="text-xs" style="color: var(--color-muted);">Enable</span>
                 <input
                   type="checkbox"
                   bind:checked={form.telegram.enabled}
@@ -640,10 +639,7 @@ function toggleFamily(family: ModelFamily) {
             </div>
 
             {#if form.telegram.enabled}
-              <div
-                class="p-4 space-y-4"
-                style="border-top: 1px solid var(--color-border);"
-              >
+              <div class="p-4 space-y-4" style="border-top: 1px solid var(--color-border);">
                 <div>
                   <label class="label" for="tg-token">Bot token</label>
                   <input
@@ -657,54 +653,214 @@ function toggleFamily(family: ModelFamily) {
                     From @BotFather on Telegram.
                   </p>
                 </div>
+
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label class="label" for="tg-dm">DM policy</label>
-                    <select
-                      id="tg-dm"
-                      class="input-field"
-                      bind:value={form.telegram.dmPolicy}
-                    >
+                    <select id="tg-dm" class="input-field" bind:value={form.telegram.dmPolicy}>
                       <option value="pairing">pairing</option>
+                      <option value="allowlist">allowlist</option>
                       <option value="open">open</option>
-                      <option value="closed">closed</option>
+                      <option value="disabled">disabled</option>
                     </select>
                   </div>
                   <div>
                     <label class="label" for="tg-group">Group policy</label>
-                    <select
-                      id="tg-group"
-                      class="input-field"
-                      bind:value={form.telegram.groupPolicy}
-                    >
+                    <select id="tg-group" class="input-field" bind:value={form.telegram.groupPolicy}>
                       <option value="allowlist">allowlist</option>
-                      <option value="denylist">denylist</option>
                       <option value="open">open</option>
-                      <option value="closed">closed</option>
+                      <option value="disabled">disabled</option>
                     </select>
                   </div>
                 </div>
+
+                {#if form.telegram.dmPolicy === "allowlist" || form.telegram.groupPolicy === "allowlist"}
+                  <div>
+                    <label class="label" for="tg-allowfrom">Allowed user IDs</label>
+                    <input
+                      id="tg-allowfrom"
+                      type="text"
+                      class="input-field"
+                      bind:value={form.telegram.allowFrom}
+                      placeholder="123456789, 987654321"
+                    />
+                    <p class="text-xs mt-1" style="color: var(--color-muted);">
+                      Comma-separated numeric Telegram user IDs.
+                    </p>
+                  </div>
+                {/if}
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="label" for="tg-streaming">Streaming</label>
+                    <select id="tg-streaming" class="input-field" bind:value={form.telegram.streaming}>
+                      <option value="off">off</option>
+                      <option value="partial">partial</option>
+                      <option value="block">block</option>
+                      <option value="progress">progress</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="label" for="tg-reactions">Reaction level</label>
+                    <select id="tg-reactions" class="input-field" bind:value={form.telegram.reactionLevel}>
+                      <option value="off">off</option>
+                      <option value="ack">ack</option>
+                      <option value="minimal">minimal</option>
+                      <option value="extensive">extensive</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label class="label" for="tg-streaming">Streaming</label>
-                  <select
-                    id="tg-streaming"
+                  <label class="label" for="tg-chunk">Text chunk limit</label>
+                  <input
+                    id="tg-chunk"
+                    type="number"
+                    min="500"
+                    max="4096"
                     class="input-field"
-                    bind:value={form.telegram.streaming}
-                  >
-                    <option value="off">off — send complete messages</option>
-                    <option value="on">on — stream as tokens arrive</option>
-                  </select>
+                    bind:value={form.telegram.textChunkLimit}
+                  />
+                  <p class="text-xs mt-1" style="color: var(--color-muted);">
+                    Max characters per outbound message. Telegram max is 4096.
+                  </p>
                 </div>
               </div>
             {/if}
           </div>
 
+          <!-- Discord -->
           <div
-            class="p-3 rounded-lg text-sm"
-            style="background-color: var(--color-surface-elevated); color: var(--color-muted);"
+            class="rounded-lg overflow-hidden"
+            style="border: 1px solid {form.discord.enabled
+              ? 'color-mix(in srgb, var(--color-primary) 30%, var(--color-border))'
+              : 'var(--color-border)'};"
           >
-            More channels (Discord, Slack, webhook) coming in a future release.
+            <div
+              class="flex items-center justify-between p-4"
+              style="background: {form.discord.enabled
+                ? 'color-mix(in srgb, var(--color-primary) 5%, transparent)'
+                : 'transparent'};"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-lg">🎮</span>
+                <div>
+                  <div class="font-semibold text-sm">Discord</div>
+                  <div class="text-xs" style="color: var(--color-muted);">
+                    Guild &amp; DM integration with voice support
+                  </div>
+                </div>
+              </div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <span class="text-xs" style="color: var(--color-muted);">Enable</span>
+                <input
+                  type="checkbox"
+                  bind:checked={form.discord.enabled}
+                  class="w-4 h-4 accent-[var(--color-primary)]"
+                />
+              </label>
+            </div>
+
+            {#if form.discord.enabled}
+              <div class="p-4 space-y-4" style="border-top: 1px solid var(--color-border);">
+                <div>
+                  <label class="label" for="dc-token">Bot token</label>
+                  <input
+                    id="dc-token"
+                    type="password"
+                    class="input-field"
+                    bind:value={form.discord.token}
+                    placeholder="MTxxxxxxxxxxxxxxxxxxxxxxxx.Gxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  />
+                  <p class="text-xs mt-1" style="color: var(--color-muted);">
+                    From the Discord Developer Portal. Also set <span class="font-mono">DISCORD_BOT_TOKEN</span> env var before start.
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="label" for="dc-dm">DM policy</label>
+                    <select id="dc-dm" class="input-field" bind:value={form.discord.dmPolicy}>
+                      <option value="pairing">pairing</option>
+                      <option value="allowlist">allowlist</option>
+                      <option value="open">open</option>
+                      <option value="disabled">disabled</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="label" for="dc-group">Guild policy</label>
+                    <select id="dc-group" class="input-field" bind:value={form.discord.groupPolicy}>
+                      <option value="allowlist">allowlist</option>
+                      <option value="open">open</option>
+                      <option value="disabled">disabled</option>
+                    </select>
+                  </div>
+                </div>
+
+                {#if form.discord.dmPolicy === "allowlist" || form.discord.groupPolicy === "allowlist"}
+                  <div>
+                    <label class="label" for="dc-allowfrom">Allowed user/role IDs</label>
+                    <input
+                      id="dc-allowfrom"
+                      type="text"
+                      class="input-field"
+                      bind:value={form.discord.allowFrom}
+                      placeholder="123456789012345678, 987654321098765432"
+                    />
+                    <p class="text-xs mt-1" style="color: var(--color-muted);">
+                      Comma-separated Discord user or role snowflake IDs.
+                    </p>
+                  </div>
+                {/if}
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="label" for="dc-streaming">Streaming</label>
+                    <select id="dc-streaming" class="input-field" bind:value={form.discord.streaming}>
+                      <option value="off">off</option>
+                      <option value="partial">partial</option>
+                      <option value="block">block</option>
+                      <option value="progress">progress</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="label" for="dc-status">Bot status</label>
+                    <select id="dc-status" class="input-field" bind:value={form.discord.status}>
+                      <option value="">default</option>
+                      <option value="online">online</option>
+                      <option value="idle">idle</option>
+                      <option value="dnd">dnd</option>
+                      <option value="invisible">invisible</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label
+                  class="flex items-center justify-between p-3 rounded-lg cursor-pointer"
+                  style="border: 1px solid {form.discord.voiceEnabled
+                    ? 'color-mix(in srgb, var(--color-primary) 30%, var(--color-border))'
+                    : 'var(--color-border)'};"
+                >
+                  <div>
+                    <div class="text-sm font-medium">Voice channels</div>
+                    <div class="text-xs mt-0.5" style="color: var(--color-muted);">
+                      Enable voice channel support (requires audio deps)
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    bind:checked={form.discord.voiceEnabled}
+                    class="w-4 h-4 accent-[var(--color-primary)]"
+                  />
+                </label>
+              </div>
+            {/if}
           </div>
+
+          <p class="text-xs" style="color: var(--color-muted);">
+            More channels (Slack, WhatsApp, Matrix, and others) are available as plugins — see the
+            <a href="https://docs.openclaw.ai/channels" target="_blank" rel="noopener" style="color: var(--color-primary);">channel docs</a>.
+          </p>
         </div>
       {/if}
 
