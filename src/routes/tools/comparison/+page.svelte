@@ -6,26 +6,30 @@
 	let models: ModelOption[] = [];
 	let selectedModels: ModelOption[] = [];
 	let isLoaded = false;
+	let error: string | null = null;
 
 	onMount(async () => {
 		try {
 			models = getModels();
 			selectedModels = models.slice(0, 3); // Pre-select first 3 models
 			isLoaded = true;
-		} catch (error) {
-			console.error('Failed to load models:', error);
+		} catch (err) {
+			console.error('Failed to load models:', err);
+			error = 'Failed to load models. Please try again later.';
+			isLoaded = true;
 		}
 	});
 
 	function toggleModel(model: ModelOption) {
-		const index = selectedModels.findIndex(m => m.id === model.id);
-		if (index > -1) {
-			// Remove if already selected
-			selectedModels.splice(index, 1);
+		// Create a new array instead of modifying directly for proper reactivity
+		const isSelected = selectedModels.some(m => m.id === model.id);
+		if (isSelected) {
+			// Remove model
+			selectedModels = selectedModels.filter(m => m.id !== model.id);
 		} else {
-			// Add if not selected (max 5)
+			// Add model (max 5)
 			if (selectedModels.length < 5) {
-				selectedModels.push(model);
+				selectedModels = [...selectedModels, model];
 			}
 		}
 	}
@@ -55,6 +59,10 @@
 	{#if !isLoaded}
 		<div class="text-center py-12">
 			Loading models...
+		</div>
+	{:else if error}
+		<div class="text-center py-12 text-red-600">
+			{error}
 		</div>
 	{:else}
 		<div class="mb-8">

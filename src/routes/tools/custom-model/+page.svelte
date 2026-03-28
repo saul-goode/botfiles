@@ -6,6 +6,7 @@
 	let models: ModelOption[] = [];
 	let customModels: any[] = [];
 	let isLoaded = false;
+	let error: string | null = null;
 	let newModel = {
 		id: '',
 		label: '',
@@ -22,8 +23,10 @@
 		try {
 			models = getModels();
 			isLoaded = true;
-		} catch (error) {
-			console.error('Failed to load models:', error);
+		} catch (err) {
+			console.error('Failed to load models:', err);
+			error = 'Failed to load models. Please try again later.';
+			isLoaded = true;
 		}
 	});
 
@@ -36,7 +39,8 @@
 				alias: newModel.alias.trim() || newModel.label.toLowerCase().replace(/\s+/g, '-').slice(0, 12)
 			};
 			
-			customModels.push(modelToAdd);
+			// Create new array for proper reactivity
+			customModels = [...customModels, modelToAdd];
 			resetForm();
 		}
 	}
@@ -53,7 +57,8 @@
 	}
 
 	function removeCustomModel(index: number) {
-		customModels.splice(index, 1);
+		// Create new array for proper reactivity
+		customModels = customModels.filter((_, i) => i !== index);
 	}
 
 	function saveCustomModels() {
@@ -78,6 +83,10 @@
 	{#if !isLoaded}
 		<div class="text-center py-12">
 			Loading models...
+		</div>
+	{:else if error}
+		<div class="text-center py-12 text-red-600">
+			{error}
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
