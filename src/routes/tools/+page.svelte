@@ -10,6 +10,24 @@
 			tags: ['json', 'configuration', 'setup']
 		},
 		{
+			href: '/tools/comparison',
+			icon: '📊',
+			label: 'Model Comparison',
+			description:
+				'Compare different AI models side-by-side to help select the best one for your use case.',
+			badge: 'Ready',
+			tags: ['models', 'comparison', 'selection']
+		},
+		{
+			href: '/tools/custom-model',
+			icon: '🔧',
+			label: 'Custom Models',
+			description:
+				'Add and configure custom AI models that aren\'t in the pre-fetched list.',
+			badge: 'Ready',
+			tags: ['models', 'configuration', 'custom']
+		},
+		{
 			href: '/tools/setup',
 			icon: '🚀',
 			label: 'Setup Wizard',
