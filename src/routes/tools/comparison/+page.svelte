@@ -77,7 +77,9 @@
 				{#each models as model}
 					<div 
 						class="card p-4 cursor-pointer transition-all duration-200 {isSelected(model) ? 'border-[var(--color-primary)] bg-[var(--color-primary-bg)]' : 'border-[var(--color-border) hover:border-[var(--color-primary)]'}"
-						on:click={() => toggleModel(model)}
+						onclick={() => toggleModel(model)}
+						role="button"
+						aria-label={`Select ${model.label}`}
 					>
 						<div class="flex justify-between items-start">
 							<div>
@@ -103,7 +105,7 @@
 			<div class="flex justify-center mb-8">
 				<button 
 					class="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
-					on:click={compareModels}
+					onclick={compareModels}
 				>
 					Compare Selected Models
 				</button>
