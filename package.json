@@ -33,5 +33,9 @@
 	},
 	"patchedDependencies": {
 		"estree-walker@3.0.3": "patches/estree-walker@3.0.3.patch"
+	},
+	"dependencies": {
+		"@playwright/test": "^1.58.2",
+		"playwright": "^1.58.2"
 	}
 }
