@@ -2,9 +2,6 @@
 	import { onMount } from 'svelte';
 	import { getModels } from '$lib/models.ts';
 	import type { ModelOption } from '$lib/models.ts';
-	import type { PageData } from './$types';
-
-	const { models: initialModels } = $props();
 
 	let models: ModelOption[] = [];
 	let selectedModels: ModelOption[] = [];
@@ -13,10 +10,9 @@
 
 	onMount(async () => {
 		try {
-			// Ensure we're getting the models correctly
-			const loadedModels = initialModels || getModels();
-			models = loadedModels;
-			selectedModels = loadedModels.slice(0, 3); // Pre-select first 3 models
+			// Directly load models from the models.ts file
+			models = getModels();
+			selectedModels = models.slice(0, 3); // Pre-select first 3 models
 			isLoaded = true;
 		} catch (err) {
 			console.error('Failed to load models:', err);
