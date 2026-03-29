@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getModels } from '$lib/models.ts';
 	import type { ModelOption } from '$lib/models.ts';
 
 	let models: ModelOption[] = [];
@@ -10,7 +9,7 @@
 
 	onMount(async () => {
 		try {
-			// Fetch models from the API endpoint directly
+			// Directly fetch models from the API endpoint
 			const response = await fetch('/api/models');
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -21,16 +20,9 @@
 			isLoaded = true;
 		} catch (err) {
 			console.error('Failed to load models:', err);
-			// Fallback to getModels() if API fails
-			try {
-				models = getModels();
-				selectedModels = models.slice(0, 3);
-				isLoaded = true;
-			} catch (fallbackErr) {
-				console.error('Failed to load fallback models:', fallbackErr);
-				error = 'Failed to load models. Please try again later.';
-				isLoaded = true;
-			}
+			// Since we can't get fallback models in this context, just show error
+			error = 'Failed to load models. Please try again later.';
+			isLoaded = true;
 		}
 	});
 
