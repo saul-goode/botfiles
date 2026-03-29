@@ -10,14 +10,27 @@
 
 	onMount(async () => {
 		try {
-			// Directly load models from the models.ts file
-			models = getModels();
-			selectedModels = models.slice(0, 3); // Pre-select first 3 models
+			// Fetch models from the API endpoint directly
+			const response = await fetch('/api/models');
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			const loadedModels = await response.json();
+			models = loadedModels;
+			selectedModels = loadedModels.slice(0, 3); // Pre-select first 3 models
 			isLoaded = true;
 		} catch (err) {
 			console.error('Failed to load models:', err);
-			error = 'Failed to load models. Please try again later.';
-			isLoaded = true;
+			// Fallback to getModels() if API fails
+			try {
+				models = getModels();
+				selectedModels = models.slice(0, 3);
+				isLoaded = true;
+			} catch (fallbackErr) {
+				console.error('Failed to load fallback models:', fallbackErr);
+				error = 'Failed to load models. Please try again later.';
+				isLoaded = true;
+			}
 		}
 	});
 
