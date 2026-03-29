@@ -151,6 +151,7 @@ export function transformModels(raw: LLMGatewayModel[]): ModelOption[] {
  */
 export function getModels(): ModelOption[] {
 	const data = modelsSnapshot as ModelOption[];
+	// Ensure we return at least the fallback models if the snapshot is empty
 	return data.length ? data : FALLBACK_MODELS;
 }
 

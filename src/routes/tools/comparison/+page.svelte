@@ -10,8 +10,10 @@
 
 	onMount(async () => {
 		try {
-			models = getModels();
-			selectedModels = models.slice(0, 3); // Pre-select first 3 models
+			// Ensure we're getting the models correctly
+			const loadedModels = getModels();
+			models = loadedModels;
+			selectedModels = loadedModels.slice(0, 3); // Pre-select first 3 models
 			isLoaded = true;
 		} catch (err) {
 			console.error('Failed to load models:', err);
