@@ -10,14 +10,18 @@
 	onMount(async () => {
 		try {
 			// Directly fetch models from the API endpoint
+			console.log('Attempting to fetch models from /api/models');
 			const response = await fetch('/api/models');
+			console.log('Fetch response status:', response.status);
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 			const loadedModels = await response.json();
+			console.log('Models loaded:', loadedModels.length);
 			models = loadedModels;
 			selectedModels = loadedModels.slice(0, 3); // Pre-select first 3 models
 			isLoaded = true;
+			console.log('Models successfully loaded and isLoaded set to true');
 		} catch (err) {
 			console.error('Failed to load models:', err);
 			// Since we can't get fallback models in this context, just show error
