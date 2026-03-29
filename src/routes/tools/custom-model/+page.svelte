@@ -2,6 +2,9 @@
 	import { onMount } from 'svelte';
 	import { getModels } from '$lib/models.ts';
 	import type { ModelOption } from '$lib/models.ts';
+	import type { PageData } from './$types';
+
+	const { models: initialModels } = $props();
 
 	let models: ModelOption[] = [];
 	let customModels: any[] = [];
@@ -21,7 +24,7 @@
 
 	onMount(async () => {
 		try {
-			models = getModels();
+			models = initialModels || getModels();
 			isLoaded = true;
 		} catch (err) {
 			console.error('Failed to load models:', err);
