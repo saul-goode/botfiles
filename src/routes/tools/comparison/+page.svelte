@@ -17,7 +17,7 @@
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 			const loadedModels = await response.json();
-			console.log('Models loaded:', loadedModels.length);
+			console.log('Models loaded successfully:', loadedModels.length);
 			models = loadedModels;
 			selectedModels = loadedModels.slice(0, 3); // Pre-select first 3 models
 			isLoaded = true;
