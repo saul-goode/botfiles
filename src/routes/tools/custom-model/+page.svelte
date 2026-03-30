@@ -98,8 +98,9 @@
 				<div>
 					<div class="space-y-4">
 						<div>
-							<label class="block text-sm font-medium mb-1">Model ID *</label>
+							<label for="model-id" class="block text-sm font-medium mb-1">Model ID *</label>
 							<input
+								id="model-id"
 								type="text"
 								class="w-full p-2 border rounded"
 								value={newModel.id}
@@ -107,8 +108,9 @@
 							/>
 						</div>
 						<div>
-							<label class="block text-sm font-medium mb-1">Model Label *</label>
+							<label for="model-label" class="block text-sm font-medium mb-1">Model Label *</label>
 							<input
+								id="model-label"
 								type="text"
 								class="w-full p-2 border rounded"
 								value={newModel.label}
@@ -116,8 +118,9 @@
 							/>
 						</div>
 						<div>
-							<label class="block text-sm font-medium mb-1">Family</label>
+							<label for="model-family" class="block text-sm font-medium mb-1">Family</label>
 							<select
+								id="model-family"
 								class="w-full p-2 border rounded"
 								value={newModel.family}
 								onchange={handleFamilyChange}
@@ -131,8 +134,9 @@
 							</select>
 						</div>
 						<div>
-							<label class="block text-sm font-medium mb-1">Provider</label>
+							<label for="model-provider" class="block text-sm font-medium mb-1">Provider</label>
 							<select
+								id="model-provider"
 								class="w-full p-2 border rounded"
 								value={newModel.provider}
 								onchange={handleProviderChange}
@@ -147,8 +151,9 @@
 							</select>
 						</div>
 						<div>
-							<label class="block text-sm font-medium mb-1">Alias</label>
+							<label for="model-alias" class="block text-sm font-medium mb-1">Alias</label>
 							<input
+								id="model-alias"
 								type="text"
 								class="w-full p-2 border rounded"
 								value={newModel.alias}
