@@ -1,56 +1,74 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import type { ModelOption } from '$lib/models.ts';
+	import { FALLBACK_MODELS, PROVIDER_INFO, type ModelFamily, type ModelOption } from '$lib/models';
 
-	let models: ModelOption[] = [];
-	let selectedModels: ModelOption[] = [];
-	let isLoaded = false;
-	let error: string | null = null;
+	const { data } = $props();
+	const allModels: ModelOption[] = data.models?.length ? data.models : FALLBACK_MODELS;
 
-	onMount(async () => {
-		try {
-			// Directly fetch models from the API endpoint
-			console.log('Attempting to fetch models from /api/models');
-			const response = await fetch('/api/models');
-			console.log('Fetch response status:', response.status);
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			const loadedModels = await response.json();
-			console.log('Models loaded successfully:', loadedModels.length);
-			models = loadedModels;
-			selectedModels = loadedModels.slice(0, 3); // Pre-select first 3 models
-			isLoaded = true;
-			console.log('Models successfully loaded and isLoaded set to true');
-		} catch (err) {
-			console.error('Failed to load models:', err);
-			// Since we can't get fallback models in this context, just show error
-			error = 'Failed to load models. Please try again later.';
-			isLoaded = true;
+	let selectedFamilies: ModelFamily[] = $state([]);
+	let selectedModels: ModelOption[] = $state([]);
+
+	const ALL_FAMILIES: ModelFamily[] = ['OpenAI', 'Anthropic', 'Google', 'xAI', 'Perplexity', 'Meta', 'Groq', 'Other'];
+
+	// Models available based on selected families
+	const filteredModels = $derived(
+		allModels.filter(m => selectedFamilies.includes(m.family))
+	);
+
+	// Group filtered models by family for display
+	const modelsByFamily = $derived.by(() => {
+		const groups = new Map<ModelFamily, ModelOption[]>();
+		for (const m of filteredModels) {
+			if (!groups.has(m.family)) groups.set(m.family, []);
+			groups.get(m.family)!.push(m);
 		}
+		return groups;
 	});
 
-	function toggleModel(model: ModelOption) {
-		// Create a new array instead of modifying directly for proper reactivity
-		const isSelected = selectedModels.some(m => m.id === model.id);
-		if (isSelected) {
-			// Remove model
-			selectedModels = selectedModels.filter(m => m.id !== model.id);
+	// Count models per family for badges
+	const familyCounts = $derived.by(() => {
+		const counts = new Map<ModelFamily, number>();
+		for (const m of allModels) {
+			counts.set(m.family, (counts.get(m.family) ?? 0) + 1);
+		}
+		return counts;
+	});
+
+	function toggleFamily(family: ModelFamily) {
+		if (selectedFamilies.includes(family)) {
+			selectedFamilies = selectedFamilies.filter(f => f !== family);
+			// Remove any selected models from this family
+			selectedModels = selectedModels.filter(m => m.family !== family);
 		} else {
-			// Add model (max 5)
-			if (selectedModels.length < 5) {
-				selectedModels = [...selectedModels, model];
-			}
+			selectedFamilies = [...selectedFamilies, family];
 		}
 	}
 
-	function isSelected(model: ModelOption) {
-		return selectedModels.some(m => m.id === model.id);
+	function toggleModel(model: ModelOption) {
+		if (selectedModels.some(m => m.id === model.id)) {
+			selectedModels = selectedModels.filter(m => m.id !== model.id);
+		} else {
+			selectedModels = [...selectedModels, model];
+		}
 	}
 
-	function compareModels() {
-		// This would be where we'd implement the actual comparison logic
-		console.log('Comparing models:', selectedModels);
+	function selectAllInFamily(family: ModelFamily) {
+		const familyModels = modelsByFamily.get(family) ?? [];
+		const allSelected = familyModels.every(m => selectedModels.some(s => s.id === m.id));
+		if (allSelected) {
+			// Deselect all in this family
+			const familyIds = new Set(familyModels.map(m => m.id));
+			selectedModels = selectedModels.filter(m => !familyIds.has(m.id));
+		} else {
+			// Select all in this family (avoid duplicates)
+			const existing = new Set(selectedModels.map(m => m.id));
+			const toAdd = familyModels.filter(m => !existing.has(m.id));
+			selectedModels = [...selectedModels, ...toAdd];
+		}
+	}
+
+	function clearAll() {
+		selectedModels = [];
+		selectedFamilies = [];
 	}
 </script>
 
@@ -63,101 +81,160 @@
 	<div class="section-title">Tools</div>
 	<h1 class="text-3xl font-bold mb-3">Model Comparison</h1>
 	<p class="mb-12" style="color: var(--color-muted); max-width: 520px;">
-		Compare different AI models side-by-side to help select the best one for your use case.
+		Select providers to browse their models, then pick the ones you want to compare side-by-side.
 	</p>
 
-	{#if !isLoaded}
-		<div class="text-center py-12">
-			Loading models...
-		</div>
-	{:else if error}
-		<div class="text-center py-12 text-red-600">
-			{error}
-		</div>
-	{:else}
-		<div class="mb-8">
-			<h2 class="text-xl font-semibold mb-4">Select Models to Compare</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-				{#each models as model}
-					<div 
-						class="card p-4 cursor-pointer transition-all duration-200 {isSelected(model) ? 'border-[var(--color-primary)] bg-[var(--color-primary-bg)]' : 'border-[var(--color-border) hover:border-[var(--color-primary)]'}"
-						onclick={() => toggleModel(model)}
-						role="button"
-						aria-label={`Select ${model.label}`}
+	<!-- Step 1: Provider/Family selection -->
+	<div class="mb-10">
+		<h2 class="text-xl font-semibold mb-4">1. Choose Providers</h2>
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+			{#each ALL_FAMILIES as family}
+				{@const info = PROVIDER_INFO[family]}
+				{@const count = familyCounts.get(family) ?? 0}
+				{@const active = selectedFamilies.includes(family)}
+				{#if count > 0}
+					<button
+						class="p-4 rounded-lg border text-left transition-all duration-150
+							{active
+								? 'border-[var(--color-primary)] bg-[var(--color-primary-bg)]'
+								: 'border-[var(--color-border)] hover:border-[var(--color-primary)]'}"
+						onclick={() => toggleFamily(family)}
 					>
-						<div class="flex justify-between items-start">
-							<div>
-								<h3 class="font-semibold">{model.label}</h3>
-								<p class="text-sm text-muted">{model.family}</p>
-							</div>
-							<span class="text-lg">{model.provider === 'openai-codex' ? '🤖' : '🌐'}</span>
+						<div class="flex items-center gap-2 mb-1">
+							<span class="text-lg">{info.icon}</span>
+							<span class="font-semibold">{family}</span>
 						</div>
-						<div class="mt-2 flex justify-between items-center">
-							<span class="text-xs px-2 py-1 rounded bg-[var(--color-bg)] text-muted">
-								{model.id}
-							</span>
-							{#if model.free}
-								<span class="text-xs px-2 py-1 rounded bg-green-100 text-green-800">Free</span>
-							{:else}
-								<span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">Paid</span>
-							{/if}
-						</div>
-					</div>
-				{/each}
-			</div>
+						<p class="text-xs" style="color: var(--color-muted);">{count} model{count !== 1 ? 's' : ''}</p>
+					</button>
+				{/if}
+			{/each}
+		</div>
+	</div>
 
-			<div class="flex justify-center mb-8">
-				<button 
-					class="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
-					onclick={compareModels}
+	<!-- Step 2: Model selection (only shown when families are selected) -->
+	{#if selectedFamilies.length > 0}
+		<div class="mb-10">
+			<h2 class="text-xl font-semibold mb-4">2. Select Models</h2>
+			{#each [...modelsByFamily] as [family, familyModels]}
+				<div class="mb-6">
+					<div class="flex items-center justify-between mb-3">
+						<h3 class="font-semibold flex items-center gap-2">
+							<span>{PROVIDER_INFO[family].icon}</span>
+							{family}
+							<span class="text-xs font-normal px-2 py-0.5 rounded-full bg-[var(--color-bg)]" style="color: var(--color-muted);">
+								{familyModels.length}
+							</span>
+						</h3>
+						<button
+							class="text-xs px-2 py-1 rounded hover:bg-[var(--color-bg)] transition-colors"
+							style="color: var(--color-muted);"
+							onclick={() => selectAllInFamily(family)}
+						>
+							{familyModels.every(m => selectedModels.some(s => s.id === m.id)) ? 'Deselect all' : 'Select all'}
+						</button>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+						{#each familyModels as model}
+							{@const checked = selectedModels.some(m => m.id === model.id)}
+							<button
+								class="p-3 rounded-lg border text-left transition-all duration-150
+									{checked
+										? 'border-[var(--color-primary)] bg-[var(--color-primary-bg)]'
+										: 'border-[var(--color-border)] hover:border-[var(--color-primary)]'}"
+								onclick={() => toggleModel(model)}
+							>
+								<div class="flex justify-between items-start">
+									<div class="min-w-0">
+										<div class="font-medium truncate">{model.label}</div>
+										<div class="text-xs truncate" style="color: var(--color-muted);">{model.id}</div>
+									</div>
+									<div class="flex items-center gap-2 ml-2 shrink-0">
+										{#if model.free}
+											<span class="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-800">Free</span>
+										{/if}
+										<span class="w-4 h-4 rounded border flex items-center justify-center text-xs
+											{checked ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white' : 'border-[var(--color-border)]'}">
+											{#if checked}&#10003;{/if}
+										</span>
+									</div>
+								</div>
+							</button>
+						{/each}
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
+
+	<!-- Comparison table -->
+	{#if selectedModels.length > 0}
+		<div class="mb-8">
+			<div class="flex items-center justify-between mb-4">
+				<h2 class="text-xl font-semibold">Comparison</h2>
+				<button
+					class="text-xs px-3 py-1.5 rounded border border-[var(--color-border)] hover:bg-[var(--color-bg)] transition-colors"
+					style="color: var(--color-muted);"
+					onclick={clearAll}
 				>
-					Compare Selected Models
+					Clear all
 				</button>
 			</div>
-		</div>
-
-		{#if selectedModels.length > 0}
-			<div class="mb-8">
-				<h2 class="text-xl font-semibold mb-4">Comparison Results</h2>
-				<div class="overflow-x-auto">
-					<table class="min-w-full border-collapse">
-						<thead>
-							<tr class="border-b">
-								<th class="text-left p-3">Model</th>
-								{#each selectedModels as model}
-									<th class="text-center p-3 border-l">{model.label}</th>
-								{/each}
-							</tr>
-						</thead>
-						<tbody>
-							<tr class="border-b">
-								<td class="p-3 font-semibold">Provider</td>
-								{#each selectedModels as model}
-									<td class="p-3 text-center border-l">{model.provider}</td>
-								{/each}
-							</tr>
-							<tr class="border-b">
-								<td class="p-3 font-semibold">Family</td>
-								{#each selectedModels as model}
-									<td class="p-3 text-center border-l">{model.family}</td>
-								{/each}
-							</tr>
-							<tr class="border-b">
-								<td class="p-3 font-semibold">Free</td>
-								{#each selectedModels as model}
-									<td class="p-3 text-center border-l">{model.free ? 'Yes' : 'No'}</td>
-								{/each}
-							</tr>
-							<tr class="border-b">
-								<td class="p-3 font-semibold">Alias</td>
-								{#each selectedModels as model}
-									<td class="p-3 text-center border-l">{model.alias}</td>
-								{/each}
-							</tr>
-						</tbody>
-					</table>
-				</div>
+			<div class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+				<table class="min-w-full border-collapse">
+					<thead>
+						<tr class="border-b border-[var(--color-border)]" style="background: var(--color-bg);">
+							<th class="text-left p-3 font-semibold" style="min-width: 120px;">Property</th>
+							{#each selectedModels as model}
+								<th class="text-center p-3 border-l border-[var(--color-border)] font-semibold" style="min-width: 160px;">
+									<div>{model.label}</div>
+								</th>
+							{/each}
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="border-b border-[var(--color-border)]">
+							<td class="p-3 font-medium">Family</td>
+							{#each selectedModels as model}
+								<td class="p-3 text-center border-l border-[var(--color-border)]">
+									{PROVIDER_INFO[model.family].icon} {model.family}
+								</td>
+							{/each}
+						</tr>
+						<tr class="border-b border-[var(--color-border)]">
+							<td class="p-3 font-medium">Provider</td>
+							{#each selectedModels as model}
+								<td class="p-3 text-center border-l border-[var(--color-border)]">
+									{model.provider === 'openai-codex' ? 'OpenAI Codex' : 'OpenRouter'}
+								</td>
+							{/each}
+						</tr>
+						<tr class="border-b border-[var(--color-border)]">
+							<td class="p-3 font-medium">Model ID</td>
+							{#each selectedModels as model}
+								<td class="p-3 text-center border-l border-[var(--color-border)]">
+									<span class="text-xs" style="color: var(--color-muted);">{model.id}</span>
+								</td>
+							{/each}
+						</tr>
+						<tr class="border-b border-[var(--color-border)]">
+							<td class="p-3 font-medium">Alias</td>
+							{#each selectedModels as model}
+								<td class="p-3 text-center border-l border-[var(--color-border)]">
+									<code class="text-sm">{model.alias}</code>
+								</td>
+							{/each}
+						</tr>
+						<tr>
+							<td class="p-3 font-medium">Free</td>
+							{#each selectedModels as model}
+								<td class="p-3 text-center border-l border-[var(--color-border)]">
+									{model.free ? 'Yes' : 'No'}
+								</td>
+							{/each}
+						</tr>
+					</tbody>
+				</table>
 			</div>
-		{/if}
+		</div>
 	{/if}
 </div>

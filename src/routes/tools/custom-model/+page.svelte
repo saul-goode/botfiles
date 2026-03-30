@@ -1,35 +1,17 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import type { ModelOption } from '$lib/models.ts';
+	import { FALLBACK_MODELS, type ModelOption } from '$lib/models';
 
-	let models: ModelOption[] = [];
-	let customModels: any[] = [];
-	let isLoaded = false;
-	let error: string | null = null;
-	let newModel = {
+	const { data } = $props();
+	const models: ModelOption[] = data.models?.length ? data.models : FALLBACK_MODELS;
+	let customModels: any[] = $state([]);
+	let error: string | null = $state(null);
+	let newModel = $state({
 		id: '',
 		label: '',
 		family: '',
 		provider: '',
 		alias: '',
 		free: false
-	};
-
-	onMount(async () => {
-		try {
-			// Directly fetch models from the API endpoint
-			const response = await fetch('/api/models');
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			const loadedModels = await response.json();
-			models = loadedModels;
-			isLoaded = true;
-		} catch (err) {
-			console.error('Failed to load models:', err);
-			error = 'Failed to load models. Please try again later.';
-			isLoaded = true;
-		}
 	});
 
 	function addCustomModel() {
@@ -110,15 +92,6 @@
 		Add your own custom AI models to the collection.
 	</p>
 
-	{#if !isLoaded}
-		<div class="text-center py-12">
-			Loading models...
-		</div>
-	{:else if error}
-		<div class="text-center py-12 text-red-600">
-			{error}
-		</div>
-	{:else}
 		<div class="mb-12">
 			<h2 class="text-xl font-semibold mb-4">Add Custom Model</h2>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -232,5 +205,4 @@
 				</div>
 			</div>
 		</div>
-	{/if}
 </div>
