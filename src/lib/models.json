@@ -728,14 +728,6 @@
 		"free": false
 	},
 	{
-		"id": "openrouter/google/gemini-3-pro-preview",
-		"label": "Gemini 3 Pro (Preview)",
-		"family": "Google",
-		"provider": "openrouter",
-		"alias": "gemini-3-pro",
-		"free": false
-	},
-	{
 		"id": "openrouter/google/gemini-3-pro-image-preview",
 		"label": "Gemini 3 Pro Image (Preview)",
 		"family": "Google",
@@ -829,6 +821,22 @@
 		"family": "Google",
 		"provider": "openrouter",
 		"alias": "gemma-3n-e4b",
+		"free": false
+	},
+	{
+		"id": "openrouter/google/veo-3.1-generate-preview",
+		"label": "Veo 3.1",
+		"family": "Google",
+		"provider": "openrouter",
+		"alias": "veo-31-gener",
+		"free": false
+	},
+	{
+		"id": "openrouter/google/veo-3.1-fast-generate-preview",
+		"label": "Veo 3.1 Fast",
+		"family": "Google",
+		"provider": "openrouter",
+		"alias": "veo-31-fast",
 		"free": false
 	},
 	{
